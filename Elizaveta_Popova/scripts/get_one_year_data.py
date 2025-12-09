@@ -186,6 +186,48 @@ def flatten_neo_data(neo_data):
     
     return flattened_data
 
+def save_sentry_objects(data, original_filename):
+    """
+    Create a new CSV file containing only sentry objects
+    """
+    if not data:
+        print("No data to filter for sentry objects.")
+        return
+    
+    # Filter for sentry objects
+    sentry_data = [item for item in data if item.get('is_sentry_object')]
+    
+    if not sentry_data:
+        print("No sentry objects found in the data.")
+        return
+    
+    sentry_filename = original_filename.replace(".csv", "_sentry.csv")
+    
+    # Define CSV headers (same as original)
+    fieldnames = [
+        'date', 'id', 'name', 'nasa_jpl_url', 'absolute_magnitude_h',
+        'is_potentially_hazardous', 'is_sentry_object',
+        'estimated_diameter_min_km', 'estimated_diameter_max_km',
+        'close_approach_date', 'close_approach_date_full',
+        'relative_velocity_km_s', 'miss_distance_astronomical',
+        'miss_distance_km', 'orbiting_body', 'orbit_class_type',
+        'orbit_class_description', 'eccentricity', 'semi_major_axis_au',
+        'inclination_deg', 'orbital_period_days', 'perihelion_distance_au',
+        'aphelion_distance_au'
+    ]
+    
+    try:
+        with open(sentry_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(sentry_data)
+        
+        print(f"\n✓ Sentry objects saved to: {sentry_filename}")
+        print(f"  Total sentry objects: {len(sentry_data)}")
+            
+    except Exception as e:
+        print(f"Error saving sentry objects: {e}")
+
 def print_summary(data):
     """
     Print a summary of the collected data
@@ -265,6 +307,9 @@ def main():
         
         # Save to CSV with the chosen mode
         success = save_to_csv(flattened_data, filename, mode)
+
+        # Save sentry objects to a separate CSV
+        save_sentry_objects(flattened_data, filename)
         
         if success:
             # Print summary
